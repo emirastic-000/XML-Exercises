@@ -1,0 +1,278 @@
+id: "02-well-formed-xml"
+title: "Well-Formed XML"
+order: 2
+
+reading: |
+  # Well-Formed XML
+
+  ## What Does "Well-Formed" Mean?
+
+  An XML document is considered **well-formed** if it conforms to the basic syntax rules defined by the XML specification. A well-formed document can be successfully parsed by any XML parser. If even one rule is violated, the parser will reject the entire document -- unlike HTML, where browsers try to recover from errors.
+
+  This strictness is intentional. XML was designed for reliable data exchange, and allowing ambiguous or broken syntax would lead to interoperability problems between systems. An XML parser is **required** to stop processing and report an error if the document is not well-formed.
+
+  ## The Five Rules of Well-Formed XML
+
+  ### Rule 1: There Must Be Exactly One Root Element
+
+  Every XML document must have a single root element that wraps all other content. The root element is the outermost element in the document, and there can only be one.
+
+  ```xml
+  <!-- WELL-FORMED: single root element -->
+  <employees>
+    <employee>Alice</employee>
+    <employee>Bob</employee>
+  </employees>
+
+  <!-- NOT WELL-FORMED: two root elements -->
+  <employee>Alice</employee>
+  <employee>Bob</employee>
+  ```
+
+  The XML declaration (`<?xml ... ?>`) and comments before the root element are allowed, but there must be exactly one element at the top level.
+
+  ### Rule 2: Elements Must Be Properly Nested
+
+  Every opening tag must have a matching closing tag, and elements must be closed in the reverse order they were opened. In other words, elements cannot overlap.
+
+  ```xml
+  <!-- WELL-FORMED: proper nesting -->
+  <outer>
+    <inner>content</inner>
+  </outer>
+
+  <!-- NOT WELL-FORMED: overlapping elements -->
+  <outer>
+    <inner>content</outer>
+  </inner>
+  ```
+
+  Think of it like parentheses in math: `( [ ] )` is valid, but `( [ ) ]` is not. Each inner element must be completely contained within its parent.
+
+  ### Rule 3: Tags Are Case-Sensitive
+
+  XML is **case-sensitive**. The opening tag and closing tag must use exactly the same case. `<Name>` and `<name>` are treated as completely different elements.
+
+  ```xml
+  <!-- WELL-FORMED -->
+  <Name>Alice</Name>
+  <name>Bob</name>
+
+  <!-- NOT WELL-FORMED: case mismatch -->
+  <Name>Alice</name>
+  ```
+
+  It is common practice to use either all lowercase (`<firstname>`) or camelCase (`<firstName>`) consistently throughout a document.
+
+  ### Rule 4: Attribute Values Must Be Quoted
+
+  All attribute values must be enclosed in either single quotes (`'`) or double quotes (`"`). Unlike HTML, where some attributes can be unquoted, XML always requires quotes.
+
+  ```xml
+  <!-- WELL-FORMED -->
+  <product id="101" status='active'/>
+
+  <!-- NOT WELL-FORMED: unquoted attribute values -->
+  <product id=101 status=active/>
+  ```
+
+  You can use single quotes inside double quotes and vice versa:
+
+  ```xml
+  <message text="It's a sunny day"/>
+  <message text='She said "hello"'/>
+  ```
+
+  ### Rule 5: All Elements Must Be Closed
+
+  Every element must have a corresponding closing tag, or must use self-closing syntax. There are no "void" elements in XML like there are in HTML (`<br>`, `<img>`, etc.).
+
+  ```xml
+  <!-- WELL-FORMED -->
+  <br/>
+  <img src="photo.jpg"/>
+  <paragraph>Some text.</paragraph>
+
+  <!-- NOT WELL-FORMED: unclosed elements -->
+  <br>
+  <img src="photo.jpg">
+  <paragraph>Some text.
+  ```
+
+  ## Additional Well-Formedness Rules
+
+  Beyond the five core rules, there are a few more requirements:
+
+  ### Special Characters Must Be Escaped
+
+  Certain characters have special meaning in XML and must be represented using **entity references**:
+
+  | Character | Entity Reference | Description |
+  |-----------|-----------------|-------------|
+  | `<`       | `&lt;`          | Less than   |
+  | `>`       | `&gt;`          | Greater than|
+  | `&`       | `&amp;`         | Ampersand   |
+  | `'`       | `&apos;`        | Apostrophe  |
+  | `"`       | `&quot;`        | Quote       |
+
+  ```xml
+  <!-- WRONG: bare special characters -->
+  <formula>5 < 10 & 10 > 5</formula>
+
+  <!-- CORRECT: using entity references -->
+  <formula>5 &lt; 10 &amp; 10 &gt; 5</formula>
+  ```
+
+  Alternatively, you can use a **CDATA section** to include text that should not be parsed:
+
+  ```xml
+  <script><![CDATA[
+    if (x < 10 && y > 5) {
+      return true;
+    }
+  ]]></script>
+  ```
+
+  ### The XML Declaration
+
+  While technically optional, the XML declaration should appear as the very first line of the document if included:
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  ```
+
+  Nothing -- not even whitespace -- should appear before the XML declaration.
+
+  ### Comments
+
+  XML comments use the same syntax as HTML comments and can appear anywhere except inside a tag:
+
+  ```xml
+  <!-- This is a valid comment -->
+  <data>
+    <!-- Comments can appear between elements -->
+    <item>value</item>
+  </data>
+
+  <!-- INVALID: comment inside a tag -->
+  <data <!-- bad --> >value</data>
+  ```
+
+  Comments cannot contain double hyphens (`--`) within them.
+
+  ## Why Well-Formedness Matters
+
+  Unlike web browsers that can render broken HTML, XML parsers are designed to be strict. If a document is not well-formed:
+
+  1. The parser will **stop processing** and report a fatal error
+  2. No partial data will be returned
+  3. The application cannot proceed with the document
+
+  This strictness ensures that XML data is always unambiguous and can be reliably processed by any conforming parser on any platform.
+
+exercises:
+  - id: "ex1-fix-multiple-errors"
+    type: "fix-xml"
+    title: "Fix the Broken Employee Record"
+    prompt: |
+      This XML document has multiple well-formedness errors. Find and fix all of them.
+
+      **Hint:** There are at least 4 errors. Check for nesting, case sensitivity, quoting, and closing tags.
+    starterCode: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Employees>
+        <employee id=1>
+          <name>Alice Johnson</Name>
+          <department>Engineering</department>
+          <skills>
+            <skill>Java</skill>
+            <skill>Python
+          </skills>
+        </employee>
+        <employee id="2">
+          <name>Bob Smith</name>
+          <department>Marketing</Department>
+          <skills>
+            <skill>SEO</skill>
+            <skill>Analytics</skill>
+          </skills>
+        </employee>
+      </Employees>
+    expectedOutput: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Employees>
+        <employee id="1">
+          <name>Alice Johnson</name>
+          <department>Engineering</department>
+          <skills>
+            <skill>Java</skill>
+            <skill>Python</skill>
+          </skills>
+        </employee>
+        <employee id="2">
+          <name>Bob Smith</name>
+          <department>Marketing</department>
+          <skills>
+            <skill>SEO</skill>
+            <skill>Analytics</skill>
+          </skills>
+        </employee>
+      </Employees>
+    validation:
+      wellFormed: true
+
+  - id: "ex2-write-wellformed"
+    type: "write-xml"
+    title: "Write a Well-Formed Menu"
+    prompt: |
+      Create a well-formed XML document representing a restaurant menu. Your document should include:
+
+      - A root `<menu>` element with a `restaurantName` attribute
+      - At least 2 `<category>` child elements, each with a `name` attribute (e.g., "Appetizers", "Main Courses")
+      - Each category should contain at least 1 `<item>` element
+      - Each `<item>` should have `<name>` and `<price>` child elements
+
+      Make sure to follow all well-formedness rules!
+    validation:
+      wellFormed: true
+      requiredElements:
+        - "menu"
+        - "category"
+        - "item"
+        - "name"
+        - "price"
+      requiredAttributes:
+        - element: "menu"
+          attr: "restaurantName"
+        - element: "category"
+          attr: "name"
+      minElements:
+        category: 2
+
+quiz:
+  - question: "What happens when an XML parser encounters a document that is not well-formed?"
+    options:
+      - "It silently ignores the errors and processes what it can"
+      - "It automatically corrects the errors"
+      - "It stops processing and reports a fatal error"
+      - "It processes the document but adds warnings"
+    correct: 2
+    explanation: "XML parsers are required to stop processing and report a fatal error when they encounter a document that is not well-formed. This is by design -- XML is strict to ensure data reliability."
+
+  - question: "Which of the following is NOT well-formed XML?"
+    options:
+      - '<root><child/></root>'
+      - '<root><child></child></root>'
+      - '<Root><child></child></Root>'
+      - '<root><child></Child></root>'
+    correct: 3
+    explanation: "XML is case-sensitive. The opening tag <child> and closing tag </Child> use different cases, making this not well-formed. The tags must match exactly."
+
+  - question: "How should the less-than symbol (<) be represented in XML text content?"
+    options:
+      - "Just use < directly"
+      - "Use the entity reference &lt;"
+      - "Use a backslash: \\<"
+      - "Wrap it in single quotes: '<'"
+    correct: 1
+    explanation: "The less-than symbol has special meaning in XML (it starts a tag), so it must be represented using the entity reference &lt; when used in text content."

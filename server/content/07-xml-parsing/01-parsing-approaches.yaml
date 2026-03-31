@@ -1,0 +1,205 @@
+id: "01-parsing-approaches"
+title: "XML Parsing Approaches"
+order: 1
+
+reading: |
+  ## XML Parsing
+
+  To work with XML programmatically, you need to **parse** it — convert the raw text into a data structure your code can navigate and manipulate. There are three main approaches: **DOM**, **SAX**, and **StAX**.
+
+  ### DOM (Document Object Model)
+
+  DOM parsing loads the **entire XML document** into memory as a tree structure. You can then navigate, search, modify, and create nodes freely.
+
+  **How it works:**
+  1. Parser reads the entire XML file
+  2. Builds an in-memory tree of nodes
+  3. Returns the root node for you to traverse
+
+  **JavaScript example (browser):**
+  ```javascript
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlString, 'application/xml');
+
+  // Navigate the tree
+  const books = doc.getElementsByTagName('book');
+  for (const book of books) {
+    const title = book.querySelector('title').textContent;
+    const category = book.getAttribute('category');
+    console.log(`${title} (${category})`);
+  }
+
+  // Modify the tree
+  const newBook = doc.createElement('book');
+  newBook.setAttribute('category', 'science');
+  const title = doc.createElement('title');
+  title.textContent = 'A Brief History of Time';
+  newBook.appendChild(title);
+  doc.documentElement.appendChild(newBook);
+
+  // Serialize back to string
+  const serializer = new XMLSerializer();
+  const outputXml = serializer.serializeToString(doc);
+  ```
+
+  **Pros:**
+  - Easy to use — random access to any node
+  - Can modify the document
+  - Supports XPath queries
+  - Familiar API (same concepts as HTML DOM)
+
+  **Cons:**
+  - **High memory usage** — entire document in memory
+  - Slow for very large documents
+  - Must wait for complete parse before processing
+
+  **Best for:** Small to medium documents, when you need random access or modifications.
+
+  ### SAX (Simple API for XML)
+
+  SAX is an **event-driven** parser. Instead of building a tree, it fires events (callbacks) as it reads through the document sequentially.
+
+  **How it works:**
+  1. You register event handlers (startElement, endElement, characters, etc.)
+  2. Parser reads the XML from start to end
+  3. As it encounters each piece, it calls the appropriate handler
+  4. You process data in the handlers — the parser doesn't store anything
+
+  **JavaScript example (Node.js with sax package):**
+  ```javascript
+  import sax from 'sax';
+
+  const parser = sax.createStream(true);
+  let currentElement = '';
+
+  parser.on('opentag', (node) => {
+    currentElement = node.name;
+    if (node.name === 'book') {
+      console.log('Category:', node.attributes.category);
+    }
+  });
+
+  parser.on('text', (text) => {
+    if (currentElement === 'title') {
+      console.log('Title:', text.trim());
+    }
+  });
+
+  parser.on('closetag', (name) => {
+    currentElement = '';
+  });
+
+  parser.on('end', () => {
+    console.log('Done parsing');
+  });
+
+  // Pipe a file or write data
+  fs.createReadStream('books.xml').pipe(parser);
+  ```
+
+  **Pros:**
+  - **Very low memory** — no tree stored
+  - **Fast** — single pass, no backtracking
+  - Can start processing before the document is fully loaded
+  - Ideal for streaming
+
+  **Cons:**
+  - Read-only — cannot modify the document
+  - Forward-only — cannot go back to previous elements
+  - More complex code — must maintain state manually
+  - No XPath support
+
+  **Best for:** Very large documents, streaming, when you only need to extract specific data.
+
+  ### StAX (Streaming API for XML)
+
+  StAX is a **pull parser** — a middle ground between DOM and SAX. Instead of the parser pushing events to you (SAX), you pull events from the parser when you're ready.
+
+  **How it works:**
+  1. Create a reader from the XML source
+  2. Call `next()` to advance to the next event
+  3. Check the event type and process accordingly
+  4. Continue until the end of the document
+
+  **Conceptual example (JavaScript-like pseudocode):**
+  ```javascript
+  const reader = createXMLReader(xmlString);
+
+  while (reader.hasNext()) {
+    const event = reader.next();
+
+    switch (event.type) {
+      case 'START_ELEMENT':
+        console.log('Opening:', event.name);
+        break;
+      case 'END_ELEMENT':
+        console.log('Closing:', event.name);
+        break;
+      case 'TEXT':
+        console.log('Text:', event.value);
+        break;
+    }
+  }
+  ```
+
+  **Pros:**
+  - Low memory (streaming)
+  - Application controls the parsing flow (can stop early)
+  - Simpler code than SAX (no callbacks)
+  - Can both read and write (StAX has XMLStreamWriter)
+
+  **Cons:**
+  - Forward-only like SAX
+  - No random access
+  - Not as widely available in JavaScript (more common in Java)
+
+  **Best for:** Large documents where you want streaming but more control than SAX.
+
+  ### Comparison Table
+
+  | Feature | DOM | SAX | StAX |
+  |---|---|---|---|
+  | Memory | High | Low | Low |
+  | Speed | Slower | Fast | Fast |
+  | Access | Random | Sequential | Sequential |
+  | Direction | Any | Forward-only | Forward-only |
+  | Modification | Yes | No | Write-only |
+  | XPath | Yes | No | No |
+  | Complexity | Low | High | Medium |
+  | Best for | Small docs | Large docs, streaming | Large docs, pull-based |
+
+  ### Choosing the Right Approach
+
+  - **Use DOM** when your XML fits comfortably in memory and you need to navigate or modify it freely
+  - **Use SAX** when processing very large files or streams, and you only need to extract specific data
+  - **Use StAX** when you want streaming performance with more control flow than SAX provides
+
+exercises: []
+
+quiz:
+  - question: "Which parsing approach loads the entire XML document into memory as a tree?"
+    options:
+      - "SAX"
+      - "StAX"
+      - "DOM"
+      - "XPath"
+    correct: 2
+    explanation: "DOM (Document Object Model) loads the complete document into memory as a tree structure, allowing random access to any node."
+
+  - question: "What is the main advantage of SAX over DOM?"
+    options:
+      - "SAX supports XPath queries"
+      - "SAX allows document modification"
+      - "SAX uses very little memory because it doesn't build a tree"
+      - "SAX is easier to code"
+    correct: 2
+    explanation: "SAX's main advantage is low memory usage — it processes events sequentially without storing the document tree. This makes it suitable for very large XML files."
+
+  - question: "What makes StAX different from SAX?"
+    options:
+      - "StAX builds a tree, SAX does not"
+      - "StAX is a pull parser (you request events), SAX is a push parser (events are pushed to callbacks)"
+      - "StAX supports XPath, SAX does not"
+      - "StAX uses more memory than SAX"
+    correct: 1
+    explanation: "StAX is a pull parser where the application requests the next event, giving it more control. SAX is a push parser where events are fired via callbacks, requiring the application to react."

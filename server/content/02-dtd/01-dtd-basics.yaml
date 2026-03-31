@@ -1,0 +1,139 @@
+id: "01-dtd-basics"
+title: "DTD Basics"
+order: 1
+
+reading: |
+  ## What is a DTD?
+
+  A **Document Type Definition (DTD)** defines the structure and legal elements of an XML document. It acts as a blueprint that specifies which elements can appear, what attributes they can have, and how elements can be nested.
+
+  ### Internal vs External DTDs
+
+  A DTD can be declared **internally** (inside the XML document) or **externally** (in a separate file).
+
+  **Internal DTD:**
+  ```xml
+  <?xml version="1.0"?>
+  <!DOCTYPE note [
+    <!ELEMENT note (to, from, heading, body)>
+    <!ELEMENT to (#PCDATA)>
+    <!ELEMENT from (#PCDATA)>
+    <!ELEMENT heading (#PCDATA)>
+    <!ELEMENT body (#PCDATA)>
+  ]>
+  <note>
+    <to>Alice</to>
+    <from>Bob</from>
+    <heading>Reminder</heading>
+    <body>Don't forget the meeting!</body>
+  </note>
+  ```
+
+  **External DTD:**
+  ```xml
+  <?xml version="1.0"?>
+  <!DOCTYPE note SYSTEM "note.dtd">
+  <note>
+    <to>Alice</to>
+    <from>Bob</from>
+    <heading>Reminder</heading>
+    <body>Don't forget the meeting!</body>
+  </note>
+  ```
+
+  ### Element Declarations
+
+  The `<!ELEMENT>` declaration defines an element and its content model:
+
+  | Declaration | Meaning |
+  |---|---|
+  | `<!ELEMENT name EMPTY>` | Element has no content |
+  | `<!ELEMENT name ANY>` | Element can contain any content |
+  | `<!ELEMENT name (#PCDATA)>` | Element contains text only |
+  | `<!ELEMENT name (child1, child2)>` | Element contains children in sequence |
+  | `<!ELEMENT name (a \| b)>` | Element contains a choice of children |
+
+  **Occurrence indicators** control how many times a child can appear:
+  - `?` — zero or one
+  - `*` — zero or more
+  - `+` — one or more
+
+  ```xml
+  <!ELEMENT library (book+)>
+  <!ELEMENT book (title, author+, isbn?)>
+  <!ELEMENT title (#PCDATA)>
+  <!ELEMENT author (#PCDATA)>
+  <!ELEMENT isbn (#PCDATA)>
+  ```
+
+  ### Attribute Declarations
+
+  The `<!ATTLIST>` declaration defines attributes for an element:
+
+  ```xml
+  <!ATTLIST book
+    category CDATA #REQUIRED
+    lang CDATA "en"
+    id ID #IMPLIED
+  >
+  ```
+
+  **Attribute types:**
+  - `CDATA` — character data (any string)
+  - `ID` — a unique identifier
+  - `IDREF` / `IDREFS` — reference(s) to an ID
+  - `(val1|val2|val3)` — enumerated values
+
+  **Default values:**
+  - `#REQUIRED` — attribute must be provided
+  - `#IMPLIED` — attribute is optional
+  - `#FIXED "value"` — attribute has a fixed value
+  - `"default"` — a default value if not specified
+
+exercises:
+  - id: "ex1"
+    type: "write-xml"
+    prompt: "Write an XML document with an internal DTD for a <contacts> element containing one or more <person> elements. Each <person> must have a <name> and <email> child, plus a required 'id' attribute."
+    validation:
+      wellFormed: true
+      requiredElements: ["contacts", "person", "name", "email"]
+      requiredAttributes:
+        - element: "person"
+          attr: "id"
+      minElements:
+        person: 1
+
+  - id: "ex2"
+    type: "write-xml"
+    prompt: "Write a DTD (just the declarations, wrapped in a DOCTYPE) for a <menu> element containing one or more <item> elements. Each <item> should have a <name> child with text content, an optional <description> child, and a required 'price' attribute."
+    validation:
+      wellFormed: true
+      requiredElements: ["menu", "item", "name"]
+
+quiz:
+  - question: "What does the occurrence indicator '+' mean in a DTD?"
+    options:
+      - "Zero or one"
+      - "Zero or more"
+      - "One or more"
+      - "Exactly one"
+    correct: 2
+    explanation: "The '+' indicator means the element must appear one or more times."
+
+  - question: "Which attribute default means the attribute must always be provided?"
+    options:
+      - "#IMPLIED"
+      - "#REQUIRED"
+      - "#FIXED"
+      - "CDATA"
+    correct: 1
+    explanation: "#REQUIRED means the attribute must be specified in every instance of the element."
+
+  - question: "What does <!ELEMENT name (#PCDATA)> mean?"
+    options:
+      - "The element is empty"
+      - "The element can contain any content"
+      - "The element contains parsed character data (text)"
+      - "The element must contain child elements"
+    correct: 2
+    explanation: "#PCDATA stands for Parsed Character Data — the element contains text content."

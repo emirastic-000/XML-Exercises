@@ -1,0 +1,192 @@
+id: "02-complex-types"
+title: "Complex Types"
+order: 2
+
+reading: |
+  ## Complex Types in XSD
+
+  Complex types define elements that contain other elements, attributes, or a mix of both. They are the building blocks for structured XML content.
+
+  ### Defining Complex Types
+
+  A complex type is defined using `<xs:complexType>`:
+
+  ```xml
+  <xs:element name="book">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="title" type="xs:string"/>
+        <xs:element name="author" type="xs:string"/>
+        <xs:element name="year" type="xs:integer"/>
+      </xs:sequence>
+      <xs:attribute name="isbn" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  ```
+
+  ### Compositors: sequence, choice, all
+
+  **`xs:sequence`** — children must appear in the specified order:
+  ```xml
+  <xs:sequence>
+    <xs:element name="first" type="xs:string"/>
+    <xs:element name="last" type="xs:string"/>
+  </xs:sequence>
+  ```
+
+  **`xs:choice`** — only one of the children can appear:
+  ```xml
+  <xs:choice>
+    <xs:element name="phone" type="xs:string"/>
+    <xs:element name="email" type="xs:string"/>
+  </xs:choice>
+  ```
+
+  **`xs:all`** — all children must appear, but in any order:
+  ```xml
+  <xs:all>
+    <xs:element name="width" type="xs:decimal"/>
+    <xs:element name="height" type="xs:decimal"/>
+    <xs:element name="depth" type="xs:decimal"/>
+  </xs:all>
+  ```
+
+  ### Occurrence Constraints
+
+  Control how many times an element can appear:
+
+  ```xml
+  <xs:element name="author" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+  <xs:element name="subtitle" type="xs:string" minOccurs="0"/>
+  ```
+
+  - `minOccurs` — minimum occurrences (default: 1)
+  - `maxOccurs` — maximum occurrences (default: 1, use "unbounded" for no limit)
+  - `minOccurs="0"` makes an element optional
+
+  ### Named Complex Types
+
+  You can define reusable named types:
+
+  ```xml
+  <xs:complexType name="addressType">
+    <xs:sequence>
+      <xs:element name="street" type="xs:string"/>
+      <xs:element name="city" type="xs:string"/>
+      <xs:element name="zip" type="xs:string"/>
+      <xs:element name="country" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="shipping" type="addressType"/>
+  <xs:element name="billing" type="addressType"/>
+  ```
+
+  ### Extending Complex Types
+
+  Use `<xs:extension>` to build on an existing type:
+
+  ```xml
+  <xs:complexType name="internationalAddressType">
+    <xs:complexContent>
+      <xs:extension base="addressType">
+        <xs:sequence>
+          <xs:element name="region" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  ```
+
+  ### Mixed Content
+
+  Allow text between child elements:
+
+  ```xml
+  <xs:complexType name="paragraphType" mixed="true">
+    <xs:sequence>
+      <xs:element name="bold" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="italic" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  ```
+
+  ### Complete Example
+
+  ```xml
+  <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="library">
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="book" maxOccurs="unbounded">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="title" type="xs:string"/>
+                <xs:element name="author" type="xs:string" maxOccurs="unbounded"/>
+                <xs:element name="price" type="xs:decimal"/>
+              </xs:sequence>
+              <xs:attribute name="isbn" type="xs:string" use="required"/>
+              <xs:attribute name="category" use="required">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:enumeration value="fiction"/>
+                    <xs:enumeration value="nonfiction"/>
+                    <xs:enumeration value="technical"/>
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:attribute>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  ```
+
+exercises:
+  - id: "ex1"
+    type: "create-xsd"
+    prompt: "Write an XSD schema for an <order> element that contains: a <customer> element (with <name> and <email> children), and one or more <item> elements (each with <product> string, <quantity> integer, and <price> decimal children). The <order> element should have a required 'id' attribute."
+    validation:
+      wellFormed: true
+    requiredTypes:
+      - "xs:complexType"
+      - "xs:sequence"
+      - "xs:element"
+
+  - id: "ex2"
+    type: "create-xsd"
+    prompt: "Define a named complex type called 'addressType' with street, city, zip (string), then create two elements <home> and <work> that both use this type."
+    validation:
+      wellFormed: true
+    requiredTypes:
+      - "addressType"
+      - "xs:complexType"
+
+quiz:
+  - question: "What is the difference between xs:sequence and xs:all?"
+    options:
+      - "xs:sequence allows repetition, xs:all does not"
+      - "xs:sequence requires order, xs:all allows any order"
+      - "xs:sequence is for attributes, xs:all is for elements"
+      - "There is no difference"
+    correct: 1
+    explanation: "xs:sequence requires child elements in the specified order, while xs:all allows them in any order."
+
+  - question: "How do you make an element optional in XSD?"
+    options:
+      - "Set use='optional'"
+      - "Set minOccurs='0'"
+      - "Set required='false'"
+      - "Use xs:choice"
+    correct: 1
+    explanation: "Setting minOccurs='0' on an element makes it optional. The 'use' attribute is for attributes, not elements."
+
+  - question: "What does maxOccurs='unbounded' mean?"
+    options:
+      - "The element cannot appear"
+      - "The element can appear any number of times"
+      - "The element has no content"
+      - "The element has no restrictions"
+    correct: 1
+    explanation: "maxOccurs='unbounded' means the element can appear an unlimited number of times."

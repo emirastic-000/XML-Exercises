@@ -1,0 +1,5 @@
+id: "03-xml-schema"
+title: "XML Schema (XSD)"
+description: "Master XML Schema Definition for powerful type-based XML validation."
+order: 3
+icon: "🏗️"

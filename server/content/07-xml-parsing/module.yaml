@@ -1,0 +1,5 @@
+id: "07-xml-parsing"
+title: "XML Parsing"
+description: "Learn different approaches to parsing XML: DOM, SAX, and StAX."
+order: 7
+icon: "⚙️"

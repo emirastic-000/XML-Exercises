@@ -1,0 +1,168 @@
+id: "01-xquery-basics"
+title: "XQuery Basics"
+order: 1
+
+reading: |
+  ## What is XQuery?
+
+  **XQuery** is a query language designed specifically for querying and transforming XML data. It is to XML what SQL is to relational databases. XQuery is built on XPath expressions and adds powerful features like FLWOR expressions, element constructors, and functions.
+
+  ### XQuery vs XPath
+
+  XPath selects nodes; XQuery can select, transform, and construct new XML. Every XPath expression is also a valid XQuery expression, but XQuery adds much more.
+
+  ### Basic XQuery Expressions
+
+  XQuery can use XPath directly:
+
+  ```xquery
+  doc("books.xml")/bookstore/book/title
+  ```
+
+  The `doc()` function loads an XML document. You can also use `collection()` for multiple documents.
+
+  ### FLWOR Expressions
+
+  The cornerstone of XQuery. FLWOR stands for: **For, Let, Where, Order by, Return**.
+
+  ```xquery
+  for $book in doc("books.xml")/bookstore/book
+  where $book/price > 20
+  order by $book/title
+  return $book/title
+  ```
+
+  **Breakdown:**
+  - `for` — iterates over a sequence, binding each item to a variable
+  - `let` — assigns a value to a variable (no iteration)
+  - `where` — filters the results
+  - `order by` — sorts the results
+  - `return` — defines the output for each iteration
+
+  ### For vs Let
+
+  ```xquery
+  (: 'for' iterates — this returns each title separately :)
+  for $title in //book/title
+  return <item>{$title/text()}</item>
+
+  (: 'let' assigns — this returns one element with all titles :)
+  let $titles := //book/title
+  return <items>{$titles}</items>
+  ```
+
+  ### Element Constructors
+
+  XQuery can construct new XML elements:
+
+  ```xquery
+  for $book in //book
+  return
+    <result>
+      <name>{$book/title/text()}</name>
+      <cost>{$book/price/text()}</cost>
+    </result>
+  ```
+
+  Curly braces `{}` embed expressions within constructed elements — this is called an **enclosed expression**.
+
+  ### Conditional Expressions
+
+  ```xquery
+  for $book in //book
+  return
+    <book>
+      <title>{$book/title/text()}</title>
+      {
+        if ($book/price > 30) then
+          <label>Expensive</label>
+        else
+          <label>Affordable</label>
+      }
+    </book>
+  ```
+
+  ### Quantified Expressions
+
+  ```xquery
+  (: Does any book cost more than 50? :)
+  some $b in //book satisfies $b/price > 50
+
+  (: Do all books have an author? :)
+  every $b in //book satisfies $b/author
+  ```
+
+  ### Built-in Functions
+
+  XQuery includes many useful functions:
+
+  ```xquery
+  count(//book)                    (: Number of books :)
+  sum(//book/price)                (: Total of all prices :)
+  avg(//book/price)                (: Average price :)
+  min(//book/price)                (: Minimum price :)
+  max(//book/price)                (: Maximum price :)
+  distinct-values(//book/@category) (: Unique categories :)
+  string-join(//book/title, ', ')  (: Comma-separated titles :)
+  ```
+
+  ### Complete Example
+
+  Given this XML:
+  ```xml
+  <library>
+    <book category="fiction">
+      <title>The Great Gatsby</title>
+      <author>F. Scott Fitzgerald</author>
+      <year>1925</year>
+      <price>10.99</price>
+    </book>
+    <book category="technical">
+      <title>Learning XQuery</title>
+      <author>Priscilla Walmsley</author>
+      <year>2007</year>
+      <price>39.95</price>
+    </book>
+  </library>
+  ```
+
+  **Query: List books published after 2000, sorted by price:**
+  ```xquery
+  <modern-books>{
+    for $book in /library/book
+    where $book/year > 2000
+    order by number($book/price) descending
+    return
+      <book title="{$book/title}" price="{$book/price}"/>
+  }</modern-books>
+  ```
+
+exercises: []
+
+quiz:
+  - question: "What does FLWOR stand for?"
+    options:
+      - "Find, Load, Write, Output, Return"
+      - "For, Let, Where, Order by, Return"
+      - "Filter, List, Where, Order, Restrict"
+      - "For, Loop, With, Or, Return"
+    correct: 1
+    explanation: "FLWOR stands for For, Let, Where, Order by, Return — the five clauses of XQuery's main expression type."
+
+  - question: "What is the difference between 'for' and 'let' in XQuery?"
+    options:
+      - "'for' is faster than 'let'"
+      - "'for' iterates over each item, 'let' assigns the entire sequence to a variable"
+      - "'let' is only used inside 'for'"
+      - "There is no difference"
+    correct: 1
+    explanation: "'for' iterates, binding the variable to each item one at a time. 'let' assigns the whole sequence to the variable at once."
+
+  - question: "What do curly braces {} do inside XQuery element constructors?"
+    options:
+      - "They define comments"
+      - "They define variables"
+      - "They embed XQuery expressions whose results are inserted into the output"
+      - "They create attributes"
+    correct: 2
+    explanation: "Curly braces in element constructors are 'enclosed expressions' — they evaluate the XQuery expression inside and insert the result into the constructed element."

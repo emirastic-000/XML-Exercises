@@ -1,0 +1,139 @@
+id: "01-xsd-basics"
+title: "XSD Basics"
+order: 1
+
+reading: |
+  ## What is XML Schema (XSD)?
+
+  **XML Schema Definition (XSD)** is a powerful alternative to DTDs for defining XML document structure. Unlike DTDs, XSD is written in XML itself and supports data types, namespaces, and more precise content constraints.
+
+  ### The Schema Root Element
+
+  Every XSD starts with an `<xs:schema>` root element:
+
+  ```xml
+  <?xml version="1.0"?>
+  <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <!-- declarations go here -->
+  </xs:schema>
+  ```
+
+  ### Simple Type Elements
+
+  Simple elements contain only text — no child elements or attributes. XSD provides built-in data types:
+
+  ```xml
+  <xs:element name="title" type="xs:string"/>
+  <xs:element name="price" type="xs:decimal"/>
+  <xs:element name="quantity" type="xs:integer"/>
+  <xs:element name="published" type="xs:date"/>
+  <xs:element name="available" type="xs:boolean"/>
+  ```
+
+  **Common built-in types:**
+  | Type | Description | Example |
+  |------|-------------|---------|
+  | `xs:string` | Text string | "Hello World" |
+  | `xs:integer` | Whole number | 42 |
+  | `xs:decimal` | Decimal number | 19.99 |
+  | `xs:boolean` | True/false | true |
+  | `xs:date` | Date | 2024-01-15 |
+  | `xs:dateTime` | Date and time | 2024-01-15T09:30:00 |
+  | `xs:anyURI` | A URI | http://example.com |
+
+  ### Default and Fixed Values
+
+  ```xml
+  <xs:element name="color" type="xs:string" default="red"/>
+  <xs:element name="currency" type="xs:string" fixed="USD"/>
+  ```
+
+  ### Attribute Declarations
+
+  Attributes are always simple types:
+
+  ```xml
+  <xs:attribute name="lang" type="xs:string"/>
+  <xs:attribute name="id" type="xs:integer" use="required"/>
+  <xs:attribute name="version" type="xs:string" default="1.0"/>
+  ```
+
+  The `use` attribute can be `required`, `optional` (default), or `prohibited`.
+
+  ### Restrictions (Facets)
+
+  You can restrict simple types to create new types:
+
+  ```xml
+  <xs:simpleType name="ageType">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="150"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="statusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="active"/>
+      <xs:enumeration value="inactive"/>
+      <xs:enumeration value="pending"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="zipCode">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[0-9]{5}"/>
+    </xs:restriction>
+  </xs:simpleType>
+  ```
+
+  **Common facets:** `minInclusive`, `maxInclusive`, `minExclusive`, `maxExclusive`, `pattern`, `enumeration`, `length`, `minLength`, `maxLength`, `whiteSpace`.
+
+exercises:
+  - id: "ex1"
+    type: "create-xsd"
+    prompt: "Write an XSD schema that defines a <person> element with child elements: <name> (string), <age> (integer), and <email> (string). The <person> element should also have a required 'id' attribute of type integer."
+    validation:
+      wellFormed: true
+    requiredTypes:
+      - "xs:element"
+      - "xs:complexType"
+      - "xs:sequence"
+
+  - id: "ex2"
+    type: "create-xsd"
+    prompt: "Write an XSD schema that defines a custom simple type called 'ratingType' that restricts xs:integer to values between 1 and 5 (inclusive). Then define a <review> element with a <rating> child element using this type."
+    validation:
+      wellFormed: true
+    requiredTypes:
+      - "xs:simpleType"
+      - "xs:restriction"
+      - "ratingType"
+
+quiz:
+  - question: "Which XSD type would you use for a price like 19.99?"
+    options:
+      - "xs:integer"
+      - "xs:decimal"
+      - "xs:string"
+      - "xs:float"
+    correct: 1
+    explanation: "xs:decimal is the appropriate type for exact decimal numbers like prices."
+
+  - question: "What does the 'use' attribute in xs:attribute control?"
+    options:
+      - "The data type of the attribute"
+      - "Whether the attribute is required, optional, or prohibited"
+      - "The default value of the attribute"
+      - "The namespace of the attribute"
+    correct: 1
+    explanation: "The 'use' attribute specifies whether an attribute is required, optional (default), or prohibited."
+
+  - question: "Which facet restricts a string to match a specific pattern?"
+    options:
+      - "xs:enumeration"
+      - "xs:pattern"
+      - "xs:restriction"
+      - "xs:format"
+    correct: 1
+    explanation: "The xs:pattern facet uses regular expressions to constrain string values."

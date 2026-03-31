@@ -1,0 +1,209 @@
+id: "01-xslt-basics"
+title: "XSLT Basics"
+order: 1
+
+reading: |
+  ## What is XSLT?
+
+  **XSLT (Extensible Stylesheet Language Transformations)** is a language for transforming XML documents into other XML documents, HTML, or plain text. It uses XPath to navigate the source document and templates to define the output.
+
+  ### How XSLT Works
+
+  1. The XSLT processor reads a **source XML document** and an **XSLT stylesheet**
+  2. It matches elements in the source against **templates** in the stylesheet
+  3. Each template defines what to output when a match occurs
+  4. The result is a **new document** — the source is never modified
+
+  ### The Stylesheet Root
+
+  ```xml
+  <?xml version="1.0"?>
+  <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <!-- templates go here -->
+  </xsl:stylesheet>
+  ```
+
+  ### xsl:template — Matching Nodes
+
+  Templates match nodes using the `match` attribute (an XPath expression):
+
+  ```xml
+  <xsl:template match="/">
+    <html>
+      <body>
+        <h1>My Bookstore</h1>
+        <xsl:apply-templates select="bookstore/book"/>
+      </body>
+    </html>
+  </xsl:template>
+
+  <xsl:template match="book">
+    <div class="book">
+      <h2><xsl:value-of select="title"/></h2>
+      <p>By: <xsl:value-of select="author"/></p>
+      <p>Price: $<xsl:value-of select="price"/></p>
+    </div>
+  </xsl:template>
+  ```
+
+  ### xsl:value-of — Extracting Values
+
+  Outputs the text value of a selected node:
+
+  ```xml
+  <xsl:value-of select="title"/>
+  <xsl:value-of select="@category"/>
+  <xsl:value-of select="price * 1.1"/>
+  ```
+
+  ### xsl:for-each — Looping
+
+  Iterates over a node set:
+
+  ```xml
+  <xsl:template match="/">
+    <html><body>
+      <table>
+        <xsl:for-each select="bookstore/book">
+          <tr>
+            <td><xsl:value-of select="title"/></td>
+            <td><xsl:value-of select="price"/></td>
+          </tr>
+        </xsl:for-each>
+      </table>
+    </body></html>
+  </xsl:template>
+  ```
+
+  You can sort within for-each:
+
+  ```xml
+  <xsl:for-each select="bookstore/book">
+    <xsl:sort select="price" data-type="number" order="ascending"/>
+    <!-- output -->
+  </xsl:for-each>
+  ```
+
+  ### xsl:apply-templates — Delegating Processing
+
+  Tells the processor to find and apply matching templates for selected nodes:
+
+  ```xml
+  <xsl:template match="bookstore">
+    <div>
+      <xsl:apply-templates select="book"/>
+    </div>
+  </xsl:template>
+  ```
+
+  This is more modular than `xsl:for-each` — each element type gets its own template.
+
+  ### xsl:if — Conditional Output
+
+  ```xml
+  <xsl:if test="price > 20">
+    <span class="expensive">Premium</span>
+  </xsl:if>
+  ```
+
+  ### xsl:choose — Multiple Conditions
+
+  ```xml
+  <xsl:choose>
+    <xsl:when test="price > 30">
+      <span class="premium">Premium</span>
+    </xsl:when>
+    <xsl:when test="price > 15">
+      <span class="standard">Standard</span>
+    </xsl:when>
+    <xsl:otherwise>
+      <span class="budget">Budget</span>
+    </xsl:otherwise>
+  </xsl:choose>
+  ```
+
+  ### Complete Example
+
+  **Source XML:**
+  ```xml
+  <catalog>
+    <cd>
+      <title>Empire Burlesque</title>
+      <artist>Bob Dylan</artist>
+      <price>10.90</price>
+    </cd>
+    <cd>
+      <title>Hide your heart</title>
+      <artist>Bonnie Tyler</artist>
+      <price>9.90</price>
+    </cd>
+  </catalog>
+  ```
+
+  **XSLT Stylesheet:**
+  ```xml
+  <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:template match="/">
+      <html><body>
+        <h2>CD Collection</h2>
+        <table border="1">
+          <tr><th>Title</th><th>Artist</th><th>Price</th></tr>
+          <xsl:apply-templates select="catalog/cd"/>
+        </table>
+      </body></html>
+    </xsl:template>
+
+    <xsl:template match="cd">
+      <tr>
+        <td><xsl:value-of select="title"/></td>
+        <td><xsl:value-of select="artist"/></td>
+        <td><xsl:value-of select="price"/></td>
+      </tr>
+    </xsl:template>
+  </xsl:stylesheet>
+  ```
+
+exercises:
+  - id: "ex1"
+    type: "write-xslt"
+    prompt: "Write an XSLT stylesheet that transforms a <bookstore> XML document into an HTML unordered list (<ul>) where each <book> becomes a <li> containing the title and author."
+    requiredTemplates:
+      - "/"
+    validation:
+      wellFormed: true
+
+  - id: "ex2"
+    type: "write-xslt"
+    prompt: "Write an XSLT stylesheet with a template matching 'catalog/product' that outputs a <div> for each product showing its <name> in an <h3> and <price> in a <p>. Include an xsl:if to add '(On Sale!)' when price is less than 10."
+    requiredTemplates:
+      - "/"
+    validation:
+      wellFormed: true
+
+quiz:
+  - question: "What does xsl:apply-templates do?"
+    options:
+      - "Creates a new template"
+      - "Tells the processor to find and apply matching templates for selected nodes"
+      - "Copies the source XML verbatim"
+      - "Removes matched elements"
+    correct: 1
+    explanation: "xsl:apply-templates instructs the XSLT processor to process the selected nodes by finding and applying matching template rules."
+
+  - question: "What is the difference between xsl:for-each and xsl:apply-templates?"
+    options:
+      - "They are identical"
+      - "xsl:for-each loops inline, xsl:apply-templates delegates to separate template rules"
+      - "xsl:for-each is faster"
+      - "xsl:apply-templates cannot use select"
+    correct: 1
+    explanation: "xsl:for-each processes nodes inline within the current template, while xsl:apply-templates delegates processing to separate matching template rules, making the stylesheet more modular."
+
+  - question: "What does xsl:value-of select='@category' output?"
+    options:
+      - "The text 'category'"
+      - "The value of the category attribute of the current node"
+      - "All category elements"
+      - "Nothing — attributes cannot be selected"
+    correct: 1
+    explanation: "xsl:value-of with select='@category' outputs the string value of the category attribute on the current context node."

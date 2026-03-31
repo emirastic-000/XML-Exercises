@@ -1,0 +1,5 @@
+id: "02-dtd"
+title: "Document Type Definition (DTD)"
+description: "Learn to define and validate XML document structure using DTDs."
+order: 2
+icon: "📋"

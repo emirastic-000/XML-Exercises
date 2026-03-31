@@ -1,0 +1,5 @@
+id: "06-xquery"
+title: "XQuery"
+description: "Query and transform XML data using the XQuery language."
+order: 6
+icon: "🔍"

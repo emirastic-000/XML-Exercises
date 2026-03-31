@@ -1,0 +1,272 @@
+id: "01-elements-and-attributes"
+title: "XML Elements and Attributes"
+order: 1
+
+reading: |
+  # XML Elements and Attributes
+
+  ## What is XML?
+
+  **XML (eXtensible Markup Language)** is a markup language designed to store and transport data. Unlike HTML, which focuses on how data *looks*, XML focuses on what data *is*. XML was designed to be both human-readable and machine-readable, making it one of the most widely used formats for data exchange between systems.
+
+  XML was developed by the World Wide Web Consortium (W3C) and became a W3C Recommendation in 1998. It is a simplified subset of SGML (Standard Generalized Markup Language) and has since become a cornerstone technology in web services, configuration files, document formats, and data interchange.
+
+  Here is a simple XML document:
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <message>
+    <to>Alice</to>
+    <from>Bob</from>
+    <body>Hello, how are you?</body>
+  </message>
+  ```
+
+  The first line is the **XML declaration**, which specifies the XML version and character encoding. While optional, it is considered best practice to include it.
+
+  ## XML Elements
+
+  An **element** is the most fundamental building block of an XML document. Elements consist of a start tag, content, and an end tag:
+
+  ```xml
+  <tagname>content</tagname>
+  ```
+
+  ### The Root Element
+
+  Every XML document must have exactly **one root element** that wraps all other elements. The root element is the top-level parent of every other element in the document:
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <library>
+    <!-- Everything goes inside the root element -->
+    <book>...</book>
+    <book>...</book>
+  </library>
+  ```
+
+  In this example, `<library>` is the root element. You cannot have two sibling elements at the top level -- that would be invalid XML.
+
+  ### Child Elements and Nesting
+
+  Elements can contain other elements, creating a **hierarchical tree structure**. An element contained within another is called a **child element**, and the containing element is the **parent**:
+
+  ```xml
+  <bookstore>
+    <book>
+      <title>Learning XML</title>
+      <author>
+        <firstName>Erik</firstName>
+        <lastName>Ray</lastName>
+      </author>
+      <price>39.95</price>
+    </book>
+  </bookstore>
+  ```
+
+  In this hierarchy:
+  - `<bookstore>` is the root element and parent of `<book>`
+  - `<book>` is a child of `<bookstore>` and parent of `<title>`, `<author>`, and `<price>`
+  - `<firstName>` and `<lastName>` are children of `<author>` and grandchildren of `<book>`
+
+  Elements must be **properly nested** -- you cannot overlap tags:
+
+  ```xml
+  <!-- WRONG: overlapping tags -->
+  <b><i>bold and italic</b></i>
+
+  <!-- CORRECT: properly nested -->
+  <b><i>bold and italic</i></b>
+  ```
+
+  ### Text Content
+
+  Elements can contain text content, which is the data stored between the start and end tags:
+
+  ```xml
+  <city>New York</city>
+  <population>8336817</population>
+  ```
+
+  Elements can also contain **mixed content** -- a combination of text and child elements, though this is less common in data-oriented XML:
+
+  ```xml
+  <paragraph>This is <bold>important</bold> text.</paragraph>
+  ```
+
+  ### Empty Elements
+
+  An element with no content is called an **empty element**. Empty elements can be written in two ways:
+
+  ```xml
+  <!-- Long form -->
+  <lineBreak></lineBreak>
+
+  <!-- Self-closing shorthand (preferred) -->
+  <lineBreak/>
+  ```
+
+  Both forms are equivalent. The self-closing syntax is more concise and commonly used.
+
+  ## XML Attributes
+
+  **Attributes** provide additional information about elements. They are placed inside the start tag as name-value pairs:
+
+  ```xml
+  <book category="fiction" lang="en">
+    <title>The Great Gatsby</title>
+  </book>
+  ```
+
+  ### Attribute Syntax Rules
+
+  - Attribute values **must be quoted** (single or double quotes)
+  - An element **cannot have two attributes with the same name**
+  - Attribute names follow the same naming rules as element names
+
+  ```xml
+  <!-- Double quotes (most common) -->
+  <element attr="value"/>
+
+  <!-- Single quotes (also valid) -->
+  <element attr='value'/>
+
+  <!-- Useful when value contains quotes -->
+  <element attr="It's a value"/>
+  <element attr='She said "hello"'/>
+  ```
+
+  ### When to Use Attributes vs. Child Elements
+
+  A common question is whether data should be stored as an attribute or a child element. Consider this example:
+
+  ```xml
+  <!-- Using attributes -->
+  <person firstName="John" lastName="Doe" age="30"/>
+
+  <!-- Using child elements -->
+  <person>
+    <firstName>John</firstName>
+    <lastName>Doe</lastName>
+    <age>30</age>
+  </person>
+  ```
+
+  **General guidelines:**
+  - Use **attributes** for metadata, identifiers, and simple values that don't need sub-structure (like `id`, `type`, `category`)
+  - Use **child elements** for data content, especially if the data might contain multiple values, be complex, or grow over time
+  - Attributes **cannot** contain multiple values, tree structures, or be easily extended
+
+  ## Element Naming Rules
+
+  XML element and attribute names must follow these rules:
+  - Names are **case-sensitive** (`<Book>` and `<book>` are different)
+  - Names must start with a letter or underscore
+  - Names can contain letters, digits, hyphens, underscores, and periods
+  - Names **cannot** start with the letters "xml" (in any case combination)
+  - Names **cannot** contain spaces
+
+  ```xml
+  <!-- Valid names -->
+  <firstName/>
+  <_private/>
+  <item2/>
+  <shipping-address/>
+
+  <!-- Invalid names -->
+  <2ndItem/>      <!-- starts with digit -->
+  <first name/>   <!-- contains space -->
+  <xmlData/>      <!-- starts with "xml" -->
+  ```
+
+exercises:
+  - id: "ex1-write-bookstore"
+    type: "write-xml"
+    title: "Create a Bookstore"
+    prompt: |
+      Create an XML document for a bookstore. Your document should have:
+
+      - A root `<bookstore>` element
+      - At least 2 `<book>` child elements
+      - Each `<book>` must have a `category` attribute (e.g., "fiction", "non-fiction")
+      - Each `<book>` must contain `<title>` and `<author>` child elements
+
+      You do NOT need to include the XML declaration.
+    validation:
+      wellFormed: true
+      requiredElements:
+        - "bookstore"
+        - "book"
+        - "title"
+        - "author"
+      requiredAttributes:
+        - element: "book"
+          attr: "category"
+      minElements:
+        book: 2
+
+  - id: "ex2-fix-catalog"
+    type: "fix-xml"
+    title: "Fix the Broken XML"
+    prompt: |
+      The following XML document has several errors. Find and fix all of them so the document is well-formed.
+
+      **Hint:** Look for problems with tags, nesting, and attribute syntax.
+    starterCode: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <catalog>
+        <product id=101>
+          <name>Widget</Name>
+          <price>19.99</price>
+          <category>tools
+        </product>
+        <product id="102">
+          <name>Gadget</name>
+          <price>29.99</price>
+          <category>electronics</category>
+        </product>
+      </catalog>
+    expectedOutput: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <catalog>
+        <product id="101">
+          <name>Widget</name>
+          <price>19.99</price>
+          <category>tools</category>
+        </product>
+        <product id="102">
+          <name>Gadget</name>
+          <price>29.99</price>
+          <category>electronics</category>
+        </product>
+      </catalog>
+    validation:
+      wellFormed: true
+
+quiz:
+  - question: "Which of the following is the correct way to define an XML attribute?"
+    options:
+      - '<element attribute=value/>'
+      - '<element attribute="value"/>'
+      - '<element attribute>{value}</element>'
+      - '<element><attribute>value</attribute></element>'
+    correct: 1
+    explanation: "XML attribute values must always be enclosed in quotes (single or double). The syntax is name=\"value\" inside the opening tag."
+
+  - question: "How many root elements can an XML document have?"
+    options:
+      - "As many as needed"
+      - "At least two"
+      - "Exactly one"
+      - "None -- the XML declaration serves as the root"
+    correct: 2
+    explanation: "Every well-formed XML document must have exactly one root element that contains all other elements."
+
+  - question: "Which of the following is a valid empty element in XML?"
+    options:
+      - "<element>"
+      - "<element/>"
+      - "<element></>"
+      - "<element><//element>"
+    correct: 1
+    explanation: "An empty element can be written as a self-closing tag: <element/>. This is equivalent to <element></element>."

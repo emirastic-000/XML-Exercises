@@ -1,0 +1,175 @@
+id: "01-xpath-basics"
+title: "XPath Basics"
+order: 1
+
+reading: |
+  ## What is XPath?
+
+  **XPath (XML Path Language)** is a query language for selecting nodes from an XML document. It uses a path-like syntax to navigate through elements and attributes in an XML tree.
+
+  XPath is used extensively in XSLT, XQuery, and many programming languages for XML processing.
+
+  ### Node Types
+
+  An XML document is a tree of nodes. XPath recognizes these node types:
+  - **Element nodes** — `<book>`, `<title>`
+  - **Attribute nodes** — `category="fiction"`
+  - **Text nodes** — text content inside elements
+  - **Comment nodes** — `<!-- comment -->`
+  - **Processing instruction nodes** — `<?xml version="1.0"?>`
+  - **Root (document) node** — the entire document
+
+  ### Location Paths
+
+  XPath expressions select nodes using **location paths**. Consider this document:
+
+  ```xml
+  <bookstore>
+    <book category="fiction">
+      <title lang="en">The Great Gatsby</title>
+      <author>F. Scott Fitzgerald</author>
+      <price>10.99</price>
+    </book>
+    <book category="nonfiction">
+      <title lang="en">Learning XML</title>
+      <author>Erik Ray</author>
+      <price>39.95</price>
+    </book>
+    <book category="fiction">
+      <title lang="fr">Le Petit Prince</title>
+      <author>Antoine de Saint-Exupery</author>
+      <price>8.50</price>
+    </book>
+  </bookstore>
+  ```
+
+  **Basic path expressions:**
+
+  | Expression | Selects |
+  |---|---|
+  | `/bookstore` | The root `<bookstore>` element |
+  | `/bookstore/book` | All `<book>` children of `<bookstore>` |
+  | `/bookstore/book/title` | All `<title>` elements inside books |
+  | `//title` | All `<title>` elements anywhere in the document |
+  | `//book/author` | All `<author>` elements that are children of `<book>` |
+
+  ### Axes
+
+  Axes define the relationship between the current node and the nodes to select:
+
+  - **`child::`** — children of current node (default axis)
+  - **`parent::`** — parent of current node
+  - **`descendant::`** — all descendants (children, grandchildren, etc.)
+  - **`ancestor::`** — all ancestors (parent, grandparent, etc.)
+  - **`attribute::`** — attributes of current node (shorthand: `@`)
+  - **`self::`** — the current node itself
+  - **`following-sibling::`** — siblings after the current node
+  - **`preceding-sibling::`** — siblings before the current node
+
+  **Examples:**
+  ```
+  //book/@category         → all category attributes of book elements
+  //book/attribute::*      → all attributes of book elements
+  //title/parent::*        → parent elements of all title elements
+  ```
+
+  ### Predicates
+
+  Predicates filter node sets using conditions in square brackets `[]`:
+
+  ```
+  /bookstore/book[1]                     → first book
+  /bookstore/book[last()]                → last book
+  /bookstore/book[position() < 3]        → first two books
+  /bookstore/book[price > 10]            → books with price > 10
+  /bookstore/book[@category='fiction']   → fiction books
+  //title[@lang='en']                    → titles with lang="en"
+  ```
+
+  ### Useful Functions
+
+  | Function | Description | Example |
+  |---|---|---|
+  | `text()` | Selects text content | `//title/text()` |
+  | `position()` | Current position | `//book[position()=2]` |
+  | `last()` | Last position | `//book[last()]` |
+  | `count()` | Counts nodes | `count(//book)` |
+  | `contains()` | String contains | `//title[contains(text(),'XML')]` |
+  | `starts-with()` | String starts with | `//title[starts-with(text(),'The')]` |
+  | `not()` | Boolean negation | `//book[not(@category='fiction')]` |
+
+exercises:
+  - id: "ex1"
+    type: "write-xpath"
+    prompt: "Given the bookstore XML above, write an XPath expression that selects all book titles where the category is 'fiction'."
+    sourceDocument: |
+      <bookstore>
+        <book category="fiction">
+          <title lang="en">The Great Gatsby</title>
+          <author>F. Scott Fitzgerald</author>
+          <price>10.99</price>
+        </book>
+        <book category="nonfiction">
+          <title lang="en">Learning XML</title>
+          <author>Erik Ray</author>
+          <price>39.95</price>
+        </book>
+        <book category="fiction">
+          <title lang="fr">Le Petit Prince</title>
+          <author>Antoine de Saint-Exupery</author>
+          <price>8.50</price>
+        </book>
+      </bookstore>
+    expectedAnswer:
+      - "//book[@category='fiction']/title"
+      - "/bookstore/book[@category='fiction']/title"
+
+  - id: "ex2"
+    type: "write-xpath"
+    prompt: "Write an XPath expression that selects the price of the last book in the bookstore."
+    sourceDocument: |
+      <bookstore>
+        <book category="fiction">
+          <title>The Great Gatsby</title>
+          <price>10.99</price>
+        </book>
+        <book category="nonfiction">
+          <title>Learning XML</title>
+          <price>39.95</price>
+        </book>
+        <book category="fiction">
+          <title>Le Petit Prince</title>
+          <price>8.50</price>
+        </book>
+      </bookstore>
+    expectedAnswer:
+      - "/bookstore/book[last()]/price"
+      - "//book[last()]/price"
+
+quiz:
+  - question: "What does the XPath expression //book[@category='fiction'] select?"
+    options:
+      - "All elements named 'category' with value 'fiction'"
+      - "All book elements with a category attribute equal to 'fiction'"
+      - "The first fiction book only"
+      - "All attributes named 'category'"
+    correct: 1
+    explanation: "The // selects book elements anywhere, and the predicate [@category='fiction'] filters to those with matching attribute values."
+
+  - question: "What does the @ symbol mean in XPath?"
+    options:
+      - "It selects the root element"
+      - "It selects child elements"
+      - "It selects attributes"
+      - "It selects text nodes"
+    correct: 2
+    explanation: "@ is a shorthand for the attribute:: axis, used to select attributes of an element."
+
+  - question: "What does count(//book) return for a document with 5 book elements?"
+    options:
+      - "A list of all book elements"
+      - "The number 5"
+      - "The text content of all books"
+      - "True"
+    correct: 1
+    explanation: "The count() function returns the number of nodes in the node set — in this case, 5."

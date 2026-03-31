@@ -1,0 +1,169 @@
+id: "02-dtd-validation"
+title: "DTD Validation"
+order: 2
+
+reading: |
+  ## Validating XML with DTDs
+
+  A **valid** XML document is one that conforms to the rules defined in its DTD. This goes beyond well-formedness — a valid document must have the correct structure, elements, and attributes as declared.
+
+  ### Entity Declarations
+
+  Entities are shortcuts for text or special characters. They are declared in the DTD and referenced in the XML.
+
+  **General entities** (used in the document):
+  ```xml
+  <!ENTITY company "Acme Corporation">
+  <!ENTITY copyright "Copyright 2024 Acme Corp.">
+  ```
+
+  Usage: `<footer>&copyright;</footer>`
+
+  **Parameter entities** (used within the DTD itself):
+  ```xml
+  <!ENTITY % common-attrs "id ID #IMPLIED">
+  <!ATTLIST person %common-attrs;>
+  <!ATTLIST product %common-attrs;>
+  ```
+
+  ### Notation Declarations
+
+  Notations declare non-XML data formats:
+  ```xml
+  <!NOTATION gif SYSTEM "image/gif">
+  <!NOTATION jpg SYSTEM "image/jpeg">
+  <!ENTITY logo SYSTEM "logo.gif" NDATA gif>
+  ```
+
+  ### Mixed Content
+
+  Elements can contain both text and child elements using mixed content models:
+  ```xml
+  <!ELEMENT paragraph (#PCDATA | bold | italic)*>
+  <!ELEMENT bold (#PCDATA)>
+  <!ELEMENT italic (#PCDATA)>
+  ```
+
+  This allows content like:
+  ```xml
+  <paragraph>This is <bold>important</bold> text with <italic>emphasis</italic>.</paragraph>
+  ```
+
+  ### Practical Example: Complete DTD
+
+  ```xml
+  <?xml version="1.0"?>
+  <!DOCTYPE library [
+    <!ELEMENT library (book+)>
+    <!ELEMENT book (title, author+, year, publisher?)>
+    <!ELEMENT title (#PCDATA)>
+    <!ELEMENT author (#PCDATA)>
+    <!ELEMENT year (#PCDATA)>
+    <!ELEMENT publisher (#PCDATA)>
+    <!ATTLIST book
+      isbn ID #REQUIRED
+      category (fiction|nonfiction|technical) "fiction"
+    >
+    <!ENTITY pub "O'Reilly Media">
+  ]>
+  <library>
+    <book isbn="b001" category="technical">
+      <title>Learning XML</title>
+      <author>Erik Ray</author>
+      <year>2003</year>
+      <publisher>&pub;</publisher>
+    </book>
+  </library>
+  ```
+
+  ### Limitations of DTDs
+
+  While DTDs are useful, they have limitations:
+  - No support for data types (everything is text)
+  - Limited namespace support
+  - DTD syntax is not XML (it has its own grammar)
+  - Cannot constrain text content (e.g., "must be a number")
+
+  These limitations led to the development of **XML Schema (XSD)**, which addresses all of these issues.
+
+exercises:
+  - id: "ex1"
+    type: "write-xml"
+    prompt: "Write a complete XML document with an internal DTD for a <catalog> containing <product> elements. Each product should have a <name>, <price>, and optional <description>. The product element should have a required 'id' attribute and a 'category' attribute with enumerated values: electronics, clothing, or food."
+    validation:
+      wellFormed: true
+      requiredElements: ["catalog", "product", "name", "price"]
+      requiredAttributes:
+        - element: "product"
+          attr: "id"
+        - element: "product"
+          attr: "category"
+
+  - id: "ex2"
+    type: "fix-xml"
+    prompt: "This XML claims to follow its DTD but has structural errors. Fix it to match the DTD."
+    starterCode: |
+      <?xml version="1.0"?>
+      <!DOCTYPE team [
+        <!ELEMENT team (member+)>
+        <!ELEMENT member (name, role)>
+        <!ELEMENT name (#PCDATA)>
+        <!ELEMENT role (#PCDATA)>
+        <!ATTLIST member id ID #REQUIRED>
+      ]>
+      <team>
+        <member>
+          <name>Alice</name>
+        </member>
+        <member id="m2">
+          <role>Developer</role>
+          <name>Bob</name>
+        </member>
+      </team>
+    expectedOutput: |
+      <?xml version="1.0"?>
+      <!DOCTYPE team [
+        <!ELEMENT team (member+)>
+        <!ELEMENT member (name, role)>
+        <!ELEMENT name (#PCDATA)>
+        <!ELEMENT role (#PCDATA)>
+        <!ATTLIST member id ID #REQUIRED>
+      ]>
+      <team>
+        <member id="m1">
+          <name>Alice</name>
+          <role>Manager</role>
+        </member>
+        <member id="m2">
+          <name>Bob</name>
+          <role>Developer</role>
+        </member>
+      </team>
+
+quiz:
+  - question: "What is the difference between a general entity and a parameter entity?"
+    options:
+      - "General entities use % and parameter entities use &"
+      - "General entities are used in the document, parameter entities are used in the DTD"
+      - "General entities are external, parameter entities are internal"
+      - "There is no difference"
+    correct: 1
+    explanation: "General entities (referenced with &name;) are used in the XML document content, while parameter entities (referenced with %name;) are used within the DTD itself."
+
+  - question: "What does a mixed content model like (#PCDATA | bold)* allow?"
+    options:
+      - "Only text content"
+      - "Only bold child elements"
+      - "Text content interspersed with bold child elements"
+      - "Either text or bold, but not both"
+    correct: 2
+    explanation: "Mixed content allows an element to contain text interspersed with the specified child elements."
+
+  - question: "Which is NOT a limitation of DTDs?"
+    options:
+      - "No data type support"
+      - "Cannot define element structure"
+      - "DTD syntax is not XML"
+      - "Limited namespace support"
+    correct: 1
+    explanation: "DTDs can define element structure (that's their primary purpose). Their limitations include no data types, non-XML syntax, and limited namespace support."

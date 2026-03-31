@@ -1,0 +1,5 @@
+id: "05-xslt"
+title: "XSLT"
+description: "Transform XML documents into different formats using XSLT stylesheets."
+order: 5
+icon: "🔄"

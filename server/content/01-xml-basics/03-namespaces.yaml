@@ -1,0 +1,233 @@
+id: "03-namespaces"
+title: "XML Namespaces"
+order: 3
+
+reading: |
+  # XML Namespaces
+
+  ## Why Do We Need Namespaces?
+
+  In the real world, XML documents from different sources often need to be combined. When this happens, **name collisions** can occur -- two different XML vocabularies might use the same element name with completely different meanings.
+
+  Consider this scenario: you are combining data from an HTML table and a furniture catalog. Both use a `<table>` element, but they mean entirely different things:
+
+  ```xml
+  <!-- An HTML table -->
+  <table>
+    <tr><td>Row 1</td></tr>
+  </table>
+
+  <!-- A furniture table -->
+  <table>
+    <material>Oak</material>
+    <width>120cm</width>
+  </table>
+  ```
+
+  If these two fragments are combined into one document, an XML parser cannot distinguish between them. **Namespaces** solve this problem by qualifying element and attribute names with a unique identifier.
+
+  ## What Is a Namespace?
+
+  An XML namespace is a collection of names identified by a **URI (Uniform Resource Identifier)**. The URI serves as a unique identifier -- it does not need to point to an actual web page or resource. It simply needs to be unique.
+
+  Common namespace URIs follow a URL-like format by convention:
+
+  ```
+  http://www.w3.org/1999/xhtml
+  http://www.w3.org/2001/XMLSchema
+  http://example.com/furniture
+  ```
+
+  The key point is that the URI is just a **unique string**. Two namespaces are the same if and only if their URIs are character-for-character identical.
+
+  ## Declaring Namespaces with xmlns
+
+  Namespaces are declared using the special `xmlns` attribute. There are two forms: **default namespaces** and **prefixed namespaces**.
+
+  ### Default Namespace
+
+  A default namespace applies to the element where it is declared and all descendant elements that do not have their own namespace declaration:
+
+  ```xml
+  <table xmlns="http://www.w3.org/1999/xhtml">
+    <tr>
+      <td>This is an HTML table cell</td>
+    </tr>
+  </table>
+  ```
+
+  Here, `<table>`, `<tr>`, and `<td>` all belong to the `http://www.w3.org/1999/xhtml` namespace. No prefix is needed because it is the default.
+
+  ### Prefixed Namespace
+
+  A prefixed namespace associates a short prefix with a namespace URI. Elements and attributes using that prefix belong to the corresponding namespace:
+
+  ```xml
+  <root xmlns:h="http://www.w3.org/1999/xhtml"
+        xmlns:f="http://example.com/furniture">
+
+    <h:table>
+      <h:tr>
+        <h:td>HTML table cell</h:td>
+      </h:tr>
+    </h:table>
+
+    <f:table>
+      <f:material>Oak</f:material>
+      <f:width>120cm</f:width>
+    </f:table>
+  </root>
+  ```
+
+  Now both `<table>` elements coexist without conflict. The `h:` prefix maps to the HTML namespace, and the `f:` prefix maps to the furniture namespace.
+
+  ### Important: The Prefix Is Not the Namespace
+
+  The prefix is just a **local shorthand**. The actual namespace is the URI. These two documents are semantically identical:
+
+  ```xml
+  <!-- Document A -->
+  <h:table xmlns:h="http://www.w3.org/1999/xhtml">
+    <h:tr><h:td>Cell</h:td></h:tr>
+  </h:table>
+
+  <!-- Document B -->
+  <html:table xmlns:html="http://www.w3.org/1999/xhtml">
+    <html:tr><html:td>Cell</html:td></html:tr>
+  </html:table>
+  ```
+
+  Both use different prefixes (`h:` vs. `html:`), but the namespace URI is the same, so the meaning is identical.
+
+  ## Namespace Scope
+
+  A namespace declaration is **in scope** for the element where it is declared and all of its descendants. You can declare namespaces at any level:
+
+  ```xml
+  <root>
+    <section xmlns:doc="http://example.com/docs">
+      <doc:title>My Document</doc:title>
+      <doc:paragraph>Some text.</doc:paragraph>
+    </section>
+    <!-- doc: prefix is NOT available here -->
+  </root>
+  ```
+
+  You can also **override** a namespace declaration in a child element:
+
+  ```xml
+  <root xmlns="http://example.com/default">
+    <child>Uses default namespace</child>
+    <child xmlns="http://example.com/other">
+      Uses a different namespace
+    </child>
+  </root>
+  ```
+
+  ## Namespaces and Attributes
+
+  Attributes can also be namespace-qualified using a prefix:
+
+  ```xml
+  <book xmlns:isbn="http://example.com/isbn"
+        isbn:number="978-0-13-468599-1">
+    <title>XML in Practice</title>
+  </book>
+  ```
+
+  However, **unprefixed attributes do NOT belong to any namespace** -- not even the default namespace. This is a common source of confusion:
+
+  ```xml
+  <root xmlns="http://example.com/ns">
+    <!-- 'id' is NOT in the http://example.com/ns namespace -->
+    <element id="123">content</element>
+  </root>
+  ```
+
+  The `id` attribute in the example above has no namespace, even though the element itself is in the `http://example.com/ns` namespace.
+
+  ## Practical Usage of Namespaces
+
+  Namespaces are used extensively in real-world XML technologies:
+
+  - **XHTML**: `xmlns="http://www.w3.org/1999/xhtml"`
+  - **XML Schema (XSD)**: `xmlns:xs="http://www.w3.org/2001/XMLSchema"`
+  - **XSLT**: `xmlns:xsl="http://www.w3.org/1999/XSL/Transform"`
+  - **SOAP**: `xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"`
+  - **SVG**: `xmlns="http://www.w3.org/2000/svg"`
+
+  Here is a real-world example -- an XSLT stylesheet that transforms XML:
+
+  ```xml
+  <xsl:stylesheet version="1.0"
+      xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+    <xsl:template match="/">
+      <html xmlns="http://www.w3.org/1999/xhtml">
+        <body>
+          <xsl:apply-templates/>
+        </body>
+      </html>
+    </xsl:template>
+  </xsl:stylesheet>
+  ```
+
+  This document uses two namespaces: the XSLT namespace (prefixed with `xsl:`) and the XHTML namespace (set as default on the `<html>` element).
+
+  ## Undeclaring Namespaces
+
+  In XML 1.0, you can remove a default namespace by setting it to an empty string:
+
+  ```xml
+  <root xmlns="http://example.com/ns">
+    <child>In the namespace</child>
+    <child xmlns="">NOT in any namespace</child>
+  </root>
+  ```
+
+  Note that you cannot undeclare a prefixed namespace in XML 1.0 (this was added in XML 1.1, which is rarely used).
+
+exercises:
+  - id: "ex1-write-namespaces"
+    type: "write-xml"
+    title: "Combine Two Vocabularies with Namespaces"
+    prompt: |
+      Create an XML document that combines data from two different vocabularies using namespaces.
+
+      Requirements:
+      - A root `<document>` element
+      - Declare two namespace prefixes on the root: `lib` for `http://example.com/library` and `rev` for `http://example.com/reviews`
+      - Include at least one `<lib:book>` element with a `<lib:title>` child
+      - Include at least one `<rev:review>` element with a `<rev:rating>` child
+    validation:
+      wellFormed: true
+      requiredElements:
+        - "document"
+
+quiz:
+  - question: "What is the primary purpose of XML namespaces?"
+    options:
+      - "To make XML documents load faster"
+      - "To avoid name collisions when combining XML vocabularies"
+      - "To validate XML document structure"
+      - "To encrypt sensitive XML data"
+    correct: 1
+    explanation: "Namespaces exist to prevent name collisions. When different XML vocabularies use the same element names (like <table>), namespaces let them coexist in the same document by qualifying names with unique URIs."
+
+  - question: "What does a namespace URI actually need to be?"
+    options:
+      - "A working web page URL"
+      - "A URL that returns an XML Schema"
+      - "Any unique string (it does not need to resolve to anything)"
+      - "A registered domain name"
+    correct: 2
+    explanation: "A namespace URI is just a unique identifier string. It does not need to point to an actual web page or resource. By convention, URLs are used because they are naturally unique, but the URI itself is never fetched."
+
+  - question: "Given the declaration xmlns:p=\"http://example.com/products\", which element is in the products namespace?"
+    options:
+      - '<product>Laptop</product>'
+      - '<p:product>Laptop</p:product>'
+      - '<products:item>Laptop</products:item>'
+      - '<xmlns:p>Laptop</xmlns:p>'
+    correct: 1
+    explanation: "The prefix p: is bound to the namespace URI. Only elements explicitly using the p: prefix (like <p:product>) belong to that namespace. Unprefixed elements belong to the default namespace (or no namespace if none is declared)."
