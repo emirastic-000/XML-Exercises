@@ -27,6 +27,22 @@ A full-stack web application for learning XML through interactive lessons, hands
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose
 - OAuth credentials for [Google](https://console.cloud.google.com/) and/or [GitHub](https://github.com/settings/developers)
 
+### Obtaining GitHub OAuth Credentials
+
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Click **"New OAuth App"**
+3. Fill in the form:
+   - **Application name**: `XML Skills Training` (or any name you like)
+   - **Homepage URL**: `http://localhost:3000`
+   - **Authorization callback URL**: `http://localhost:5000/auth/github/callback`
+4. Click **"Register application"**
+5. On the next page, copy the **Client ID**
+6. Click **"Generate a new client secret"** and copy the generated secret immediately (it is only shown once)
+
+Use these values for `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in your `.env` file.
+
+> **Note for production**: Replace `localhost` URLs with your actual domain when deploying.
+
 ### Setup
 
 1. **Clone the repository**
